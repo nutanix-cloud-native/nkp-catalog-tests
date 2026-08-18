@@ -1,0 +1,8 @@
+{
+  "packages": [
+    "go@latest",
+    "pre-commit@latest",
+    "golangci-lint@latest",
+    "shfmt@latest"
+  ]
+}
