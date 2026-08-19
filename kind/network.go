@@ -8,7 +8,7 @@ import (
 	"os"
 	"sync"
 
-	"github.com/mesosphere/kommander-applications/apptests/docker"
+	"github.com/nutanix-cloud-native/nkp-catalog-tests/docker"
 )
 
 var ErrMisconfiguredNetwork = errors.New("misconfigured kind network")

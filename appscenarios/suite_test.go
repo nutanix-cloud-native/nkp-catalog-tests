@@ -15,17 +15,17 @@ import (
 	genericClient "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/apiutil"
 
-	"github.com/mesosphere/kommander-applications/apptests/docker"
-	"github.com/mesosphere/kommander-applications/apptests/environment"
-	"github.com/mesosphere/kommander-applications/apptests/flux"
-	"github.com/mesosphere/kommander-applications/apptests/kind"
+	"github.com/nutanix-cloud-native/nkp-catalog-tests/docker"
+	"github.com/nutanix-cloud-native/nkp-catalog-tests/environment"
+	"github.com/nutanix-cloud-native/nkp-catalog-tests/flux"
+	"github.com/nutanix-cloud-native/nkp-catalog-tests/kind"
 )
 
 var (
-	env              *environment.Env
-	ctx              context.Context
-	network          *docker.NetworkResource
-	k8sClient        genericClient.Client
+	env                  *environment.Env
+	ctx                  context.Context
+	network              *docker.NetworkResource
+	k8sClient            genericClient.Client
 	restClientV1Pods     rest.Interface
 	restClientV1Services rest.Interface
 	// Multi-cluster test variables (uses the same Env struct with workload fields populated)

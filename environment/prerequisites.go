@@ -17,8 +17,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/yaml"
 
-	"github.com/mesosphere/kommander-applications/apptests/net"
-	"github.com/mesosphere/kommander-applications/apptests/utils"
+	"github.com/nutanix-cloud-native/nkp-catalog-tests/net"
+	"github.com/nutanix-cloud-native/nkp-catalog-tests/utils"
 )
 
 //go:embed metallb-crs/*.yaml
@@ -117,7 +117,7 @@ func NewClient(kubeConfigPath string) (client.Client, error) {
 }
 
 func GetEnvChartPath(fileName string) (string, error) {
-	filePath := "charts/"+fileName
+	filePath := "charts/" + fileName
 	content, err := environmentChartsFS.ReadFile(filePath)
 	if err != nil {
 		return "", err

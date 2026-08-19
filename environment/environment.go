@@ -8,6 +8,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"runtime"
 	"time"
 
 	_ "embed"
@@ -26,12 +27,12 @@ import (
 	genericClient "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
-	typedclient "github.com/mesosphere/kommander-applications/apptests/client"
-	"github.com/mesosphere/kommander-applications/apptests/docker"
-	"github.com/mesosphere/kommander-applications/apptests/flux"
-	"github.com/mesosphere/kommander-applications/apptests/kind"
-	"github.com/mesosphere/kommander-applications/apptests/kustomize"
-	"github.com/mesosphere/kommander-applications/apptests/net"
+	typedclient "github.com/nutanix-cloud-native/nkp-catalog-tests/client"
+	"github.com/nutanix-cloud-native/nkp-catalog-tests/docker"
+	"github.com/nutanix-cloud-native/nkp-catalog-tests/flux"
+	"github.com/nutanix-cloud-native/nkp-catalog-tests/kind"
+	"github.com/nutanix-cloud-native/nkp-catalog-tests/kustomize"
+	"github.com/nutanix-cloud-native/nkp-catalog-tests/net"
 )
 
 const (
@@ -535,23 +536,28 @@ func (e *Env) ApplyKustomizations(ctx context.Context, path string, substitution
 	return nil
 }
 
-// absolutePathToBase returns the absolute path to common/base directory from the given working directory.
+// catalogRoot returns the catalog checkout root used by environment helpers.
+func catalogRoot() (string, error) {
+	if dir := os.Getenv("NKP_CATALOG_DIR"); dir != "" {
+		return filepath.Abs(dir)
+	}
+
+	_, file, _, ok := runtime.Caller(0)
+	if !ok {
+		return "", fmt.Errorf("could not determine package root")
+	}
+
+	return filepath.Abs(filepath.Join(filepath.Dir(file), ".."))
+}
+
+// absolutePathToBase returns the absolute path to common/base in the catalog.
 func absolutePathToBase() (string, error) {
-	wd, err := os.Getwd()
+	root, err := catalogRoot()
 	if err != nil {
 		return "", err
 	}
 
-	// determining the execution path.
-	var base string
-	_, err = os.Stat(filepath.Join(wd, "common", "base"))
-	if os.IsNotExist(err) {
-		base = "../.."
-	} else {
-		base = ""
-	}
-
-	return filepath.Join(wd, base, "common", "base"), nil
+	return filepath.Join(root, "common", "base"), nil
 }
 
 // ApplyYAML applies the YAML manifests located in the given directory and does variable substitution.

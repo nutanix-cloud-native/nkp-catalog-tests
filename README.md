@@ -1,13 +1,13 @@
-# nkp-apptests
+# nkp-catalog-tests
 
-**nkp-apptests** is a standalone, reusable application testing framework for the Nutanix Kubernetes Platform (NKP). 
+**nkp-catalog-tests** is a standalone, reusable application testing framework for the Nutanix Kubernetes Platform (NKP).
 
 ## Usage
 
 This project is structured as a standard Go module. To consume it in your Go project:
 
 ```bash
-go get github.com/nutanix-cloud-native/nkp-apptests@v0.1.0
+go get github.com/nutanix-cloud-native/nkp-catalog-tests@v0.1.0
 ```
 
 ## Local Development
