@@ -11,7 +11,7 @@ var upgradeKAppsRepoPath string
 
 const catalogDirEnv = "NKP_CATALOG_DIR"
 
-// catalogRoot returns the catalog checkout root used by application tests.
+// catalogRoot returns the catalog root used for application manifests.
 func catalogRoot() (string, error) {
 	if dir := os.Getenv(catalogDirEnv); dir != "" {
 		return filepath.Abs(dir)
@@ -20,6 +20,18 @@ func catalogRoot() (string, error) {
 	_, file, _, ok := runtime.Caller(0)
 	if !ok {
 		return "", fmt.Errorf("could not determine package root")
+	}
+
+	return filepath.Abs(filepath.Join(filepath.Dir(file), ".."))
+}
+
+// repositoryRoot returns the nkp-catalog-tests checkout root.
+// It is intentionally independent of NKP_CATALOG_DIR because testdata belongs
+// to this repository, not to the external catalog checkout.
+func repositoryRoot() (string, error) {
+	_, file, _, ok := runtime.Caller(0)
+	if !ok {
+		return "", fmt.Errorf("could not determine repository root")
 	}
 
 	return filepath.Abs(filepath.Join(filepath.Dir(file), ".."))
@@ -52,7 +64,7 @@ func absolutePathTo(application string) (string, error) {
 
 // getTestDataDir gets the directory path for test data
 func getTestDataDir() (string, error) {
-	root, err := catalogRoot()
+	root, err := repositoryRoot()
 	if err != nil {
 		return "", err
 	}

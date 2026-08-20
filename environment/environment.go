@@ -39,6 +39,7 @@ const (
 	kommanderFluxNamespace = "kommander-flux"
 	kommanderNamespace     = "kommander"
 	pollInterval           = 2 * time.Second
+	catalogDirEnv          = "NKP_CATALOG_DIR"
 
 	// ManagementClusterName is the default name for the management cluster in multi-cluster setups.
 	ManagementClusterName = "management"
@@ -536,9 +537,11 @@ func (e *Env) ApplyKustomizations(ctx context.Context, path string, substitution
 	return nil
 }
 
-// catalogRoot returns the catalog checkout root used by environment helpers.
+// catalogRoot returns external catalog checkout root used by environment
+// helpers. NKP_CATALOG_DIR points to checkout root containing applications and
+// common; it does not change paths owned by nkp-catalog-tests.
 func catalogRoot() (string, error) {
-	if dir := os.Getenv("NKP_CATALOG_DIR"); dir != "" {
+	if dir := os.Getenv(catalogDirEnv); dir != "" {
 		return filepath.Abs(dir)
 	}
 
@@ -550,7 +553,7 @@ func catalogRoot() (string, error) {
 	return filepath.Abs(filepath.Join(filepath.Dir(file), ".."))
 }
 
-// absolutePathToBase returns the absolute path to common/base in the catalog.
+// absolutePathToBase returns common/base from external catalog checkout.
 func absolutePathToBase() (string, error) {
 	root, err := catalogRoot()
 	if err != nil {

@@ -32,3 +32,14 @@ func TestCatalogRootFallback(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, expected, root)
 }
+
+func TestGetTestDataDirIgnoresCatalogDir(t *testing.T) {
+	t.Setenv(catalogDirEnv, t.TempDir())
+
+	testDataDir, err := getTestDataDir()
+	require.NoError(t, err)
+
+	expected, err := filepath.Abs(filepath.Join("..", "testdata"))
+	require.NoError(t, err)
+	assert.Equal(t, expected, testDataDir)
+}
