@@ -25,9 +25,8 @@ func catalogRoot() (string, error) {
 	return filepath.Abs(filepath.Join(filepath.Dir(file), ".."))
 }
 
-// repositoryRoot returns the nkp-catalog-tests checkout root.
-// It is intentionally independent of NKP_CATALOG_DIR because testdata belongs
-// to this repository, not to the external catalog checkout.
+// repositoryRoot returns the nkp-catalog-tests checkout root
+// this is separate from NKP_CATALOG_DIR which points to the application directory
 func repositoryRoot() (string, error) {
 	_, file, _, ok := runtime.Caller(0)
 	if !ok {
@@ -37,7 +36,7 @@ func repositoryRoot() (string, error) {
 	return filepath.Abs(filepath.Join(filepath.Dir(file), ".."))
 }
 
-// absolutePathTo returns the absolute path to the given application directory.
+// absolutePathTo returns the absolute path to the given application directory
 func absolutePathTo(application string) (string, error) {
 	root, err := catalogRoot()
 	if err != nil {
