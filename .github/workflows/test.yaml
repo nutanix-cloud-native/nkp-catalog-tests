@@ -34,8 +34,21 @@ jobs:
           refresh-cli: "true"
 
       - name: Run unit tests
-        run: devbox run -- go test ./...
+        run: devbox run -- go test -coverprofile=coverage.out ./...
 
       - name: Run appscenarios unit tests
         working-directory: appscenarios
-        run: devbox run -- go test ./...
+        run: devbox run -- go test -coverprofile=coverage.out ./...
+
+      - name: Report test coverage
+        run: |
+          devbox run -- go tool cover -func=coverage.out
+          devbox run -- go tool cover -func=appscenarios/coverage.out
+
+      - name: Upload coverage reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-reports
+          path: |
+            coverage.out
+            appscenarios/coverage.out
