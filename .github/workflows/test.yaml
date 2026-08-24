@@ -37,13 +37,12 @@ jobs:
         run: devbox run -- go test -short -coverprofile=coverage.out ./...
 
       - name: Run appscenarios unit tests
-        working-directory: appscenarios
-        run: devbox run -- go test -short -coverprofile=coverage.out ./...
+        run: devbox run -- go test -C appscenarios -short -coverprofile=coverage.out ./...
 
       - name: Report test coverage
         run: |
           devbox run -- go tool cover -func=coverage.out
-          devbox run -- go tool cover -func=appscenarios/coverage.out
+          devbox run -- go -C appscenarios tool cover -func=coverage.out
 
       - name: Upload coverage reports
         uses: actions/upload-artifact@v4
