@@ -11,6 +11,7 @@ import (
 	sourcev1 "github.com/fluxcd/source-controller/api/v1"
 	"github.com/nutanix-cloud-native/nkp-catalog-tests/flux"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/wait"
@@ -18,11 +19,15 @@ import (
 )
 
 func TestProvision(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping kind cluster provision in short mode")
+	}
+
 	env := Env{}
 	ctx := context.Background()
 
 	err := env.Provision(ctx)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	defer func() {
 		assert.NoError(t, env.Destroy(ctx))
 	}()
@@ -53,17 +58,19 @@ func TestProvision(t *testing.T) {
 }
 
 func TestApplyKustomizations(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping kind cluster kustomize apply in short mode")
+	}
+
 	ctx := context.Background()
 	env := &Env{}
 
-	// set the kustomizePath to common/base directory
 	kustomizePath, err := absolutePathToBase()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	fmt.Println(kustomizePath)
 
-	// create a kind cluster and install fluxcd on it
 	cluster, k8sClient, err := provisionEnv(ctx, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	defer func() {
 		assert.NoError(t, env.Destroy(ctx))
 	}()

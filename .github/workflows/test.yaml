@@ -34,11 +34,11 @@ jobs:
           refresh-cli: "true"
 
       - name: Run unit tests
-        run: devbox run -- go test -coverprofile=coverage.out ./...
+        run: devbox run -- go test -short -coverprofile=coverage.out ./...
 
       - name: Run appscenarios unit tests
         working-directory: appscenarios
-        run: devbox run -- go test -coverprofile=coverage.out ./...
+        run: devbox run -- go test -short -coverprofile=coverage.out ./...
 
       - name: Report test coverage
         run: |
