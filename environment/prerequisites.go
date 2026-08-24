@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"time"
 
-	. "github.com/onsi/gomega" //nolint:stylecheck,revive // test code
+	"github.com/onsi/gomega"
 
 	helmclient "github.com/mittwald/go-helm-client"
 	"inet.af/netaddr"
@@ -34,16 +34,16 @@ const METALLB_CHART_BUNDLE_NAME string = "metallb-0.13.7.tgz"
 // address.
 func InstallMetallb(ctx context.Context, kubeconfigPath string, subnet *net.Subnet) netaddr.IP {
 	ok, addresses := subnet.NextRange()
-	Expect(ok).Should(BeTrue(), "not able to get next address range")
+	gomega.Expect(ok).Should(gomega.BeTrue(), "not able to get next address range")
 
 	addressRange, err := netaddr.ParseIPRange(addresses)
-	Expect(err).ShouldNot(HaveOccurred())
+	gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
 
 	chartPath, err := GetEnvChartPath(METALLB_CHART_BUNDLE_NAME)
-	Expect(err).ShouldNot(HaveOccurred())
+	gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
 
 	kubeconfigBytes, err := os.ReadFile(kubeconfigPath)
-	Expect(err).ShouldNot(HaveOccurred())
+	gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
 
 	opt := &helmclient.KubeConfClientOptions{
 		Options: &helmclient.Options{
@@ -60,7 +60,7 @@ func InstallMetallb(ctx context.Context, kubeconfigPath string, subnet *net.Subn
 		KubeConfig:  kubeconfigBytes,
 	}
 	helmClient, err := helmclient.NewClientFromKubeConf(opt)
-	Expect(err).ShouldNot(HaveOccurred())
+	gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
 
 	timeout := 5 * time.Minute
 	if deadline, ok := ctx.Deadline(); ok {
@@ -77,24 +77,24 @@ func InstallMetallb(ctx context.Context, kubeconfigPath string, subnet *net.Subn
 	}
 
 	_, err = helmClient.InstallOrUpgradeChart(ctx, &chartSpec, nil)
-	Expect(err).ShouldNot(HaveOccurred())
+	gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
 
 	cl, err := NewClient(kubeconfigPath)
-	Expect(err).ShouldNot(HaveOccurred())
+	gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
 	for _, file := range []string{
 		"metallb-crs/ipaddresspool.yaml",
 		"metallb-crs/l2advertisement.yaml",
 	} {
 		content, err := metallbCRs.ReadFile(file)
-		Expect(err).ShouldNot(HaveOccurred())
+		gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
 		content, err = utils.EnvsubstBytes(content, utils.SubstitionsFromMap(map[string]string{
 			"addresses": addresses,
 		}))
-		Expect(err).ShouldNot(HaveOccurred())
+		gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
 		u := &unstructured.Unstructured{Object: map[string]interface{}{}}
-		Expect(yaml.Unmarshal(content, &u)).To(Succeed())
+		gomega.Expect(yaml.Unmarshal(content, &u)).To(gomega.Succeed())
 		err = cl.Create(ctx, u)
-		Expect(client.IgnoreAlreadyExists(err)).NotTo(HaveOccurred())
+		gomega.Expect(client.IgnoreAlreadyExists(err)).NotTo(gomega.HaveOccurred())
 	}
 
 	return addressRange.From()

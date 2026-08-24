@@ -7,15 +7,14 @@ import (
 
 	"inet.af/netaddr"
 
-	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/filters"
 	dockernetwork "github.com/docker/docker/api/types/network"
 
 	"github.com/nutanix-cloud-native/nkp-catalog-tests/net"
 )
 
-// NetworkResource is a simple type wrapper for docker api NetworkResource.
-type NetworkResource types.NetworkResource
+// NetworkResource is a simple type wrapper for docker network inspect result.
+type NetworkResource dockernetwork.Inspect
 
 type NetworkAPI interface {
 	// GetNetwork returns the information for a specific network configured in the docker host.
@@ -32,7 +31,7 @@ type NetworkAPI interface {
 }
 
 func (d *docker) GetNetwork(ctx context.Context, name string) (bool, *NetworkResource, error) {
-	results, err := d.NetworkList(ctx, types.NetworkListOptions{Filters: filters.NewArgs(filters.Arg("name", name))})
+	results, err := d.NetworkList(ctx, dockernetwork.ListOptions{Filters: filters.NewArgs(filters.Arg("name", name))})
 	if err != nil {
 		return false, nil, fmt.Errorf("couldn't list networks: %w", err)
 	}
@@ -87,7 +86,7 @@ func (d *docker) CreateNetwork(ctx context.Context, name string, internal bool, 
 		return nil, err
 	}
 
-	resource, err := d.NetworkInspect(ctx, resp.ID, types.NetworkInspectOptions{})
+	resource, err := d.NetworkInspect(ctx, resp.ID, dockernetwork.InspectOptions{})
 	if err != nil {
 		return nil, err
 	}

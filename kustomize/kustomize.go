@@ -56,7 +56,9 @@ func (k *Kustomize) Build() error {
 		if err != nil {
 			return err
 		}
-		k.resources.Append(res)
+		if err := k.resources.Append(res); err != nil {
+			return err
+		}
 	}
 
 	return nil

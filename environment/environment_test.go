@@ -23,7 +23,9 @@ func TestProvision(t *testing.T) {
 
 	err := env.Provision(ctx)
 	assert.NoError(t, err)
-	defer env.Destroy(ctx)
+	defer func() {
+		assert.NoError(t, env.Destroy(ctx))
+	}()
 
 	selector := labels.SelectorFromSet(map[string]string{
 		manifestgen.PartOfLabelKey:   manifestgen.PartOfLabelValue,
@@ -62,7 +64,9 @@ func TestApplyKustomizations(t *testing.T) {
 	// create a kind cluster and install fluxcd on it
 	cluster, k8sClient, err := provisionEnv(ctx, nil)
 	assert.NoError(t, err)
-	defer env.Destroy(ctx)
+	defer func() {
+		assert.NoError(t, env.Destroy(ctx))
+	}()
 
 	c, err := genericCLient.New(k8sClient.Config(), genericCLient.Options{
 		Scheme: flux.NewScheme(),

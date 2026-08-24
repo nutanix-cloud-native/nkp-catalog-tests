@@ -43,19 +43,22 @@ func Install(ctx context.Context, opts Options) error {
 	if err != nil {
 		return err
 	}
-	defer os.RemoveAll(tmpDir)
+	defer func() { _ = os.RemoveAll(tmpDir) }()
 
 	// write the manifest to the temporary directory
 	if _, err := manifest.WriteFile(tmpDir); err != nil {
 		return fmt.Errorf("install failed: %w", err)
 	}
 
-	_, err = Apply(
+	if _, err = Apply(
 		ctx,
 		opts.KubeconfigArgs,
 		opts.KubeclientOptions,
 		tmpDir,
-		filepath.Join(tmpDir, manifest.Path))
+		filepath.Join(tmpDir, manifest.Path),
+	); err != nil {
+		return fmt.Errorf("install failed: %w", err)
+	}
 
 	return nil
 }

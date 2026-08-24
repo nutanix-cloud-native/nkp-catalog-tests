@@ -579,7 +579,10 @@ func (e *Env) ApplyYAML(ctx context.Context, path string, substitutions map[stri
 	}
 
 	// Loop through the files in the specified directory and apply the YAML files to the cluster
-	err := filepath.Walk(path, func(path string, info os.FileInfo, err error) error {
+	err := filepath.Walk(path, func(path string, info os.FileInfo, walkErr error) error {
+		if walkErr != nil {
+			return walkErr
+		}
 		if info.IsDir() {
 			return nil
 		}
@@ -589,8 +592,7 @@ func (e *Env) ApplyYAML(ctx context.Context, path string, substitutions map[stri
 			return nil
 		}
 
-		err = applyYAMLFile(ctx, client, path, substitutions, true)
-		if err != nil {
+		if err := applyYAMLFile(ctx, client, path, substitutions, true); err != nil {
 			return fmt.Errorf("could not apply the YAML file for path: %s :%w", path, err)
 		}
 
@@ -619,13 +621,15 @@ func (e *Env) ApplyYAMLWithoutSubstitutions(ctx context.Context, path string, ta
 	}
 
 	// Loop through the files in the specified directory and apply the YAML files to the cluster
-	err := filepath.Walk(path, func(path string, info os.FileInfo, err error) error {
+	err := filepath.Walk(path, func(path string, info os.FileInfo, walkErr error) error {
+		if walkErr != nil {
+			return walkErr
+		}
 		if info.IsDir() {
 			return nil
 		}
 
-		err = applyYAMLFile(ctx, client, path, nil, false)
-		if err != nil {
+		if err := applyYAMLFile(ctx, client, path, nil, false); err != nil {
 			return fmt.Errorf("could not apply the YAML file for path: %s :%w", path, err)
 		}
 
