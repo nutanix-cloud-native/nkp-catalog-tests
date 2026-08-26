@@ -5,8 +5,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/mesosphere/kommander-applications/apptests/environment"
-	"github.com/mesosphere/kommander-applications/apptests/scenarios"
+	"github.com/nutanix-cloud-native/nkp-catalog-tests/environment"
+	"github.com/nutanix-cloud-native/nkp-catalog-tests/scenarios"
 )
 
 type certManager struct{}

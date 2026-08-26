@@ -4,30 +4,46 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
 )
 
 var upgradeKAppsRepoPath string
 
-// absolutePathTo returns the absolute path to the given application directory.
+const catalogDirEnv = "NKP_CATALOG_DIR"
+
+// catalogRoot returns the catalog root used for application manifests.
+func catalogRoot() (string, error) {
+	if dir := os.Getenv(catalogDirEnv); dir != "" {
+		return filepath.Abs(dir)
+	}
+
+	_, file, _, ok := runtime.Caller(0)
+	if !ok {
+		return "", fmt.Errorf("could not determine package root")
+	}
+
+	return filepath.Abs(filepath.Join(filepath.Dir(file), ".."))
+}
+
+// repositoryRoot returns the nkp-catalog-tests checkout root
+// this is separate from NKP_CATALOG_DIR which points to the application directory
+func repositoryRoot() (string, error) {
+	_, file, _, ok := runtime.Caller(0)
+	if !ok {
+		return "", fmt.Errorf("could not determine repository root")
+	}
+
+	return filepath.Abs(filepath.Join(filepath.Dir(file), ".."))
+}
+
+// absolutePathTo returns the absolute path to the given application directory
 func absolutePathTo(application string) (string, error) {
-	wd, err := os.Getwd()
+	root, err := catalogRoot()
 	if err != nil {
 		return "", err
 	}
 
-	// determining the execution path.
-	var base string
-	_, err = os.Stat(filepath.Join(wd, "applications"))
-	if os.IsNotExist(err) {
-		base = "../.."
-	} else {
-		base = ""
-	}
-
-	dir, err := filepath.Abs(filepath.Join(wd, base, "applications", application))
-	if err != nil {
-		return "", err
-	}
+	dir := filepath.Join(root, "applications", application)
 
 	// filepath.Glob returns a sorted slice of matching paths
 	matches, err := filepath.Glob(filepath.Join(dir, "*"))
@@ -47,36 +63,35 @@ func absolutePathTo(application string) (string, error) {
 
 // getTestDataDir gets the directory path for test data
 func getTestDataDir() (string, error) {
-	wd, err := os.Getwd()
+	root, err := repositoryRoot()
 	if err != nil {
 		return "", err
 	}
 
-	_, err = os.Stat(filepath.Join(wd, "../testdata"))
+	testDataDir := filepath.Join(root, "testdata")
+	_, err = os.Stat(testDataDir)
 	if err != nil {
 		return "", fmt.Errorf("testdata directory not found: %w", err)
 	}
 
-	return filepath.Abs(filepath.Join(wd, "../testdata"))
+	return testDataDir, nil
 }
 
 func getkAppsUpgradePath(application string) (string, error) {
-	wd, err := os.Getwd()
+	root, err := catalogRoot()
 	if err != nil {
 		return "", err
 	}
 
 	// Check that the app repo has been cloned
-	_, err = os.Stat(filepath.Join(wd, "../", upgradeKAppsRepoPath))
+	upgradeRoot := filepath.Join(root, upgradeKAppsRepoPath)
+	_, err = os.Stat(upgradeRoot)
 	if err != nil {
 		return "", fmt.Errorf("kommander-applications upgrade directory not found: %w", err)
 	}
 
 	// Get the absolute path to the application directory
-	dir, err := filepath.Abs(filepath.Join(wd, "../", upgradeKAppsRepoPath, "applications", application))
-	if err != nil {
-		return "", err
-	}
+	dir := filepath.Join(upgradeRoot, "applications", application)
 
 	// filepath.Glob returns a sorted slice of matching paths
 	matches, err := filepath.Glob(filepath.Join(dir, "*"))

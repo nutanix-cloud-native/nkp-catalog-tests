@@ -15,10 +15,10 @@ import (
 	"k8s.io/apimachinery/pkg/util/wait"
 	ctrlClient "sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/mesosphere/kommander-applications/apptests/constants"
-	"github.com/mesosphere/kommander-applications/apptests/environment"
-	"github.com/mesosphere/kommander-applications/apptests/flux"
-	"github.com/mesosphere/kommander-applications/apptests/scenarios"
+	"github.com/nutanix-cloud-native/nkp-catalog-tests/constants"
+	"github.com/nutanix-cloud-native/nkp-catalog-tests/environment"
+	"github.com/nutanix-cloud-native/nkp-catalog-tests/flux"
+	"github.com/nutanix-cloud-native/nkp-catalog-tests/scenarios"
 )
 
 type grafanaLokiV3 struct {

@@ -3,12 +3,13 @@ package environment
 import (
 	"context"
 	"fmt"
+	"path/filepath"
 	"testing"
 	"time"
 
 	"github.com/fluxcd/flux2/v2/pkg/manifestgen"
 	sourcev1 "github.com/fluxcd/source-controller/api/v1"
-	"github.com/mesosphere/kommander-applications/apptests/flux"
+	"github.com/nutanix-cloud-native/nkp-catalog-tests/flux"
 	"github.com/stretchr/testify/assert"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -112,7 +113,9 @@ func TestApplyKustomizations(t *testing.T) {
 }
 
 func TestAbsolutePathToBase(t *testing.T) {
+	t.Setenv("NKP_CATALOG_DIR", "/tmp/nkp-catalog")
+
 	pathToBase, err := absolutePathToBase()
 	assert.NoError(t, err)
-	assert.Contains(t, pathToBase, "kommander-applications/common/base")
+	assert.Equal(t, filepath.Join("/tmp/nkp-catalog", "common", "base"), pathToBase)
 }

@@ -11,7 +11,7 @@ import (
 	"github.com/docker/docker/api/types/filters"
 	dockernetwork "github.com/docker/docker/api/types/network"
 
-	"github.com/mesosphere/kommander-applications/apptests/net"
+	"github.com/nutanix-cloud-native/nkp-catalog-tests/net"
 )
 
 // NetworkResource is a simple type wrapper for docker api NetworkResource.

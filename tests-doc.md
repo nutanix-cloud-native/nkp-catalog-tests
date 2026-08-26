@@ -28,7 +28,7 @@ To run the tests, execute the following command:
 
 ```bash
 # For all tests
-cd apptests
+cd nkp-catalog-tests
 ginkgo appscenarios
 
 # For an individual install test

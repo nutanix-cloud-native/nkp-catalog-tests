@@ -8,6 +8,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"runtime"
 	"time"
 
 	_ "embed"
@@ -26,18 +27,19 @@ import (
 	genericClient "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
-	typedclient "github.com/mesosphere/kommander-applications/apptests/client"
-	"github.com/mesosphere/kommander-applications/apptests/docker"
-	"github.com/mesosphere/kommander-applications/apptests/flux"
-	"github.com/mesosphere/kommander-applications/apptests/kind"
-	"github.com/mesosphere/kommander-applications/apptests/kustomize"
-	"github.com/mesosphere/kommander-applications/apptests/net"
+	typedclient "github.com/nutanix-cloud-native/nkp-catalog-tests/client"
+	"github.com/nutanix-cloud-native/nkp-catalog-tests/docker"
+	"github.com/nutanix-cloud-native/nkp-catalog-tests/flux"
+	"github.com/nutanix-cloud-native/nkp-catalog-tests/kind"
+	"github.com/nutanix-cloud-native/nkp-catalog-tests/kustomize"
+	"github.com/nutanix-cloud-native/nkp-catalog-tests/net"
 )
 
 const (
 	kommanderFluxNamespace = "kommander-flux"
 	kommanderNamespace     = "kommander"
 	pollInterval           = 2 * time.Second
+	catalogDirEnv          = "NKP_CATALOG_DIR"
 
 	// ManagementClusterName is the default name for the management cluster in multi-cluster setups.
 	ManagementClusterName = "management"
@@ -535,23 +537,30 @@ func (e *Env) ApplyKustomizations(ctx context.Context, path string, substitution
 	return nil
 }
 
-// absolutePathToBase returns the absolute path to common/base directory from the given working directory.
+// catalogRoot returns external catalog checkout root used by environment
+// helpers. NKP_CATALOG_DIR points to checkout root containing applications and
+// common; it does not change paths owned by nkp-catalog-tests.
+func catalogRoot() (string, error) {
+	if dir := os.Getenv(catalogDirEnv); dir != "" {
+		return filepath.Abs(dir)
+	}
+
+	_, file, _, ok := runtime.Caller(0)
+	if !ok {
+		return "", fmt.Errorf("could not determine package root")
+	}
+
+	return filepath.Abs(filepath.Join(filepath.Dir(file), ".."))
+}
+
+// absolutePathToBase returns common/base from external catalog checkout.
 func absolutePathToBase() (string, error) {
-	wd, err := os.Getwd()
+	root, err := catalogRoot()
 	if err != nil {
 		return "", err
 	}
 
-	// determining the execution path.
-	var base string
-	_, err = os.Stat(filepath.Join(wd, "common", "base"))
-	if os.IsNotExist(err) {
-		base = "../.."
-	} else {
-		base = ""
-	}
-
-	return filepath.Join(wd, base, "common", "base"), nil
+	return filepath.Join(root, "common", "base"), nil
 }
 
 // ApplyYAML applies the YAML manifests located in the given directory and does variable substitution.
