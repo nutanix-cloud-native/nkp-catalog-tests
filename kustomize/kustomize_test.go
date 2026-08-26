@@ -33,5 +33,5 @@ metadata:
   namespace: test
 `
 
-	assert.Equal(t, output, expected)
+	assert.Equal(t, expected, string(output))
 }

@@ -55,6 +55,10 @@ var _ = BeforeSuite(func() {
 })
 
 func TestApplications(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping application scenario tests in short mode; run with ginkgo")
+	}
+
 	RegisterFailHandler(Fail)
 	suiteConfig, reporterConfig := GinkgoConfiguration()
 	RunSpecs(t, "Application Test Suite", suiteConfig, reporterConfig)

@@ -5,26 +5,24 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestCreateCluster(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping kind cluster creation in short mode")
+	}
+
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
 	defer cancel()
 
-	// create a test cluster name
 	name := "test-cluster"
 	cluster, err := CreateCluster(ctx, name)
+	require.NoError(t, err)
+	require.NotNil(t, cluster)
 
-	// assert that there is no error and the cluster is not nil
-	assert.NoError(t, err)
-	assert.NotNil(t, cluster)
+	require.Equal(t, name, cluster.Name())
+	require.NotEmpty(t, cluster.KubeconfigFilePath())
 
-	// assert that the cluster has the expected name and kubeconfig file path
-	assert.Equal(t, name, cluster.Name())
-	assert.NotEmpty(t, cluster.KubeconfigFilePath())
-
-	// delete the cluster
-	err = cluster.Delete(ctx)
-	assert.NoError(t, err)
+	require.NoError(t, cluster.Delete(ctx))
 }

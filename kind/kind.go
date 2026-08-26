@@ -11,7 +11,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/client"
 	"sigs.k8s.io/kind/pkg/cluster"
@@ -97,7 +96,9 @@ func CreateClusterWithConfig(ctx context.Context, name string, config []byte) (*
 	// discover the cluster without relying on Kind's ExportKubeConfig which
 	// has a known bug in v0.24.0 that can panic or produce "file name too
 	// long" errors when resolving the default kubeconfig path.
-	os.Setenv("KUBECONFIG", kubeconfigFile.Name())
+	if err := os.Setenv("KUBECONFIG", kubeconfigFile.Name()); err != nil {
+		return nil, fmt.Errorf("failed to set KUBECONFIG: %w", err)
+	}
 
 	return &Cluster{
 		provider:           provider,
@@ -138,7 +139,7 @@ func (c *Cluster) RunScript(ctx context.Context, nodeName, script string) error 
 	if err != nil {
 		return err
 	}
-	defer apiClient.Close()
+	defer func() { _ = apiClient.Close() }()
 
 	rst, err := apiClient.ContainerExecCreate(context.Background(), nodeName,
 		container.ExecOptions{
@@ -150,7 +151,7 @@ func (c *Cluster) RunScript(ctx context.Context, nodeName, script string) error 
 		return err
 	}
 
-	response, err := apiClient.ContainerExecAttach(context.Background(), rst.ID, types.ExecStartCheck{})
+	response, err := apiClient.ContainerExecAttach(context.Background(), rst.ID, container.ExecAttachOptions{})
 	if err != nil {
 		return err
 	}
@@ -215,7 +216,7 @@ func (c *Cluster) KubeconfigForPeers() (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("failed to create peer kubeconfig file: %w", err)
 	}
-	defer peerKubeconfigFile.Close()
+	defer func() { _ = peerKubeconfigFile.Close() }()
 
 	if _, err := peerKubeconfigFile.WriteString(kubeconfigStr); err != nil {
 		return "", fmt.Errorf("failed to write peer kubeconfig: %w", err)

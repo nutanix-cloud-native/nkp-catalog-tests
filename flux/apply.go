@@ -112,7 +112,7 @@ func readObjects(root, manifestPath string) ([]*unstructured.Unstructured, error
 	if err != nil {
 		return nil, err
 	}
-	defer ms.Close()
+	defer func() { _ = ms.Close() }()
 
 	return ssautils.ReadObjects(bufio.NewReader(ms))
 }
