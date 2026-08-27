@@ -4,10 +4,36 @@
 
 ## Usage
 
-This project is structured as a standard Go module. To consume it in your Go project:
+This project is a Go module. Catalog repositories and other test suites consume the root module:
 
 ```bash
 go get github.com/nutanix-cloud-native/nkp-catalog-tests@v0.1.0
+```
+
+```go
+import (
+	"github.com/nutanix-cloud-native/nkp-catalog-tests/environment"
+	"github.com/nutanix-cloud-native/nkp-catalog-tests/flux"
+)
+```
+
+`appscenarios/` is a nested module. Consumers of that tree need a matching `appscenarios/vX.Y.Z` tag:
+
+```bash
+go get github.com/nutanix-cloud-native/nkp-catalog-tests/appscenarios@v0.1.0
+```
+
+Until the repository is public, bypass the public proxy:
+
+```bash
+export GOPRIVATE=github.com/nutanix-cloud-native/nkp-catalog-tests
+```
+
+After the repository is public, confirm `proxy.golang.org` indexed the tag:
+
+```bash
+curl -fsSL "https://proxy.golang.org/github.com/nutanix-cloud-native/nkp-catalog-tests/@v/v0.1.0.info"
+GOPROXY=https://proxy.golang.org,direct go list -m github.com/nutanix-cloud-native/nkp-catalog-tests@v0.1.0
 ```
 
 ### `NKP_CATALOG_DIR`
@@ -40,6 +66,19 @@ This repository uses [Devbox](https://www.jetpack.io/devbox) to ensure reproduci
 
 1. Ensure you have installed and enabled the pre-commit hooks (`pre-commit install`) to run `golangci-lint` and `shfmt` automatically.
 2. Push your branch and open a Pull Request.
-3. Once approved, merge to the `main` branch. 
+3. Once approved, merge to the `main` branch.
 
-Releases are published automatically via GitHub Actions upon tagging the `main` branch with a semantic version (e.g. `vX.Y.Z`).
+## Releasing
+
+After a change is on `main`, tag a semantic version and push the tag:
+
+```bash
+git checkout main
+git pull
+git tag -a v0.1.0 -m "v0.1.0"
+git push origin v0.1.0
+```
+
+`.github/workflows/release.yaml` runs on `v*.*.*` tags. It creates a GitHub Release with generated notes and requests `proxy.golang.org` to index `github.com/nutanix-cloud-native/nkp-catalog-tests@<tag>`.
+
+If the first index request fails (the repository is still private), re-run **Actions → Release → Run workflow** against the same tag after the repository is public. Do not retag.

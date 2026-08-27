@@ -1,0 +1,61 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing git tag to publish and index"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: self-hosted-nutanix-small
+    timeout-minutes: 15
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - name: Resolve tag
+        id: tag
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "name=${{ github.event.inputs.tag }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "name=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          ref: ${{ steps.tag.outputs.name }}
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.tag.outputs.name }}
+          draft: false
+          prerelease: ${{ contains(steps.tag.outputs.name, '-') }}
+          generate_release_notes: true
+
+      # proxy.golang.org only indexes public modules. Re-run this workflow
+      # after the repository is public if the first index request fails.
+      - name: Index module on proxy.golang.org
+        env:
+          MODULE: github.com/nutanix-cloud-native/nkp-catalog-tests
+          VERSION: ${{ steps.tag.outputs.name }}
+        run: |
+          set -euo pipefail
+          info_url="https://proxy.golang.org/${MODULE}/@v/${VERSION}.info"
+          echo "Requesting ${info_url}"
+          curl --fail --silent --show-error --retry 5 --retry-delay 5 "${info_url}"
+          echo
+          echo "Indexed ${MODULE}@${VERSION}"
