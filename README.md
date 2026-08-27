@@ -71,15 +71,16 @@ This repository uses [Devbox](https://www.jetpack.io/devbox) to ensure reproduci
 
 ## Releasing
 
-After a change is on `main`, tag a semantic version and push the tag:
+Versions are calculated by [release-please](https://github.com/googleapis/release-please). Do not push version tags by hand.
 
-```bash
-git checkout main
-git pull
-git tag -a v0.1.0 -m "v0.1.0"
-git push origin v0.1.0
-```
+PR titles must be conventional commits (enforced in CI). [conventional-release-labels](https://github.com/bcoe/conventional-release-labels) then applies the matching GitHub label. release-please maps those to the next tag:
 
-`.github/workflows/release.yaml` runs on `v*.*.*` tags. It creates a GitHub Release with generated notes and requests `proxy.golang.org` to index `github.com/nutanix-cloud-native/nkp-catalog-tests@<tag>`.
+| PR title | Label | Bump |
+| --- | --- | --- |
+| `feat:` | `feature` | minor |
+| `fix:` | `fix` | patch |
+| `feat!:` or `BREAKING CHANGE:` | `breaking` | major |
 
-If the first index request fails (the repository is still private), re-run **Actions → Release → Run workflow** against the same tag after the repository is public. Do not retag.
+**Auto.** Every merge to `main` opens or updates a release PR labeled `autorelease: pending`. Merge that PR when you want to publish. That creates `vX.Y.Z`, the GitHub Release, and requests `proxy.golang.org` to index `github.com/nutanix-cloud-native/nkp-catalog-tests@<tag>`.
+
+**On-demand.** Actions → Release → Run workflow with an empty tag refreshes the release PR from commits since the last release (same label mapping). Merge it to publish.
