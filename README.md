@@ -4,23 +4,24 @@
 
 ## Usage
 
-This project is a Go module. Catalog repositories and other test suites consume the root module:
+Catalogs consume this repository as a single Go module. Add it to `go.mod`:
 
-```bash
-go get github.com/nutanix-cloud-native/nkp-catalog-tests@v0.1.0
 ```
+module github.com/nutanix-cloud-native/nkp-ai-applications-catalog
 
-```go
-import (
-	"github.com/nutanix-cloud-native/nkp-catalog-tests/environment"
-	"github.com/nutanix-cloud-native/nkp-catalog-tests/flux"
+go 1.22
+
+require (
+    github.com/nutanix-cloud-native/nkp-catalog-tests v0.1.0
+    github.com/onsi/ginkgo/v2 v2.19.0
+    github.com/onsi/gomega v1.33.1
 )
 ```
 
-`appscenarios/` is a nested module. Consumers of that tree need a matching `appscenarios/vX.Y.Z` tag:
+Or:
 
 ```bash
-go get github.com/nutanix-cloud-native/nkp-catalog-tests/appscenarios@v0.1.0
+go get github.com/nutanix-cloud-native/nkp-catalog-tests@v0.1.0
 ```
 
 Until the repository is public, bypass the public proxy:
