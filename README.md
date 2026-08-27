@@ -24,13 +24,7 @@ Or:
 go get github.com/nutanix-cloud-native/nkp-catalog-tests@v0.1.0
 ```
 
-Until the repository is public, bypass the public proxy:
-
-```bash
-export GOPRIVATE=github.com/nutanix-cloud-native/nkp-catalog-tests
-```
-
-After the repository is public, confirm `proxy.golang.org` indexed the tag:
+To confirm `proxy.golang.org` indexed the tag:
 
 ```bash
 curl -fsSL "https://proxy.golang.org/github.com/nutanix-cloud-native/nkp-catalog-tests/@v/v0.1.0.info"
