@@ -46,8 +46,6 @@ jobs:
           prerelease: ${{ contains(steps.tag.outputs.name, '-') }}
           generate_release_notes: true
 
-      # proxy.golang.org only indexes public modules. Re-run this workflow
-      # after the repository is public if the first index request fails.
       - name: Index module on proxy.golang.org
         env:
           MODULE: github.com/nutanix-cloud-native/nkp-catalog-tests
