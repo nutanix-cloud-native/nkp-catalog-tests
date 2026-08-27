@@ -4,10 +4,31 @@
 
 ## Usage
 
-This project is structured as a standard Go module. To consume it in your Go project:
+Catalogs consume this repository as a single Go module. Add it to `go.mod`:
+
+```
+module github.com/nutanix-cloud-native/nkp-ai-applications-catalog
+
+go 1.22
+
+require (
+    github.com/nutanix-cloud-native/nkp-catalog-tests v0.1.0
+    github.com/onsi/ginkgo/v2 v2.19.0
+    github.com/onsi/gomega v1.33.1
+)
+```
+
+Or:
 
 ```bash
 go get github.com/nutanix-cloud-native/nkp-catalog-tests@v0.1.0
+```
+
+To confirm `proxy.golang.org` indexed the tag:
+
+```bash
+curl -fsSL "https://proxy.golang.org/github.com/nutanix-cloud-native/nkp-catalog-tests/@v/v0.1.0.info"
+GOPROXY=https://proxy.golang.org,direct go list -m github.com/nutanix-cloud-native/nkp-catalog-tests@v0.1.0
 ```
 
 ### `NKP_CATALOG_DIR`
@@ -40,6 +61,20 @@ This repository uses [Devbox](https://www.jetpack.io/devbox) to ensure reproduci
 
 1. Ensure you have installed and enabled the pre-commit hooks (`pre-commit install`) to run `golangci-lint` and `shfmt` automatically.
 2. Push your branch and open a Pull Request.
-3. Once approved, merge to the `main` branch. 
+3. Once approved, merge to the `main` branch.
 
-Releases are published automatically via GitHub Actions upon tagging the `main` branch with a semantic version (e.g. `vX.Y.Z`).
+## Releasing
+
+Versions are calculated by [release-please](https://github.com/googleapis/release-please). Do not push version tags by hand.
+
+PR titles must be conventional commits (enforced in CI). [conventional-release-labels](https://github.com/bcoe/conventional-release-labels) then applies the matching GitHub label. release-please maps those to the next tag:
+
+| PR title | Label | Bump |
+| --- | --- | --- |
+| `feat:` | `feature` | minor |
+| `fix:` | `fix` | patch |
+| `feat!:` or `BREAKING CHANGE:` | `breaking` | major |
+
+**Auto.** Every merge to `main` opens or updates a release PR labeled `autorelease: pending`. Merge that PR when you want to publish. That creates `vX.Y.Z`, the GitHub Release, and requests `proxy.golang.org` to index `github.com/nutanix-cloud-native/nkp-catalog-tests@<tag>`.
+
+**On-demand.** Actions → Release → Run workflow with an empty tag refreshes the release PR from commits since the last release (same label mapping). Merge it to publish.
