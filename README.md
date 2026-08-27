@@ -75,6 +75,37 @@ PR titles must be conventional commits (enforced in CI). [conventional-release-l
 | `fix:` | `fix` | patch |
 | `feat!:` or `BREAKING CHANGE:` | `breaking` | major |
 
-**Auto.** Every merge to `main` opens or updates a release PR labeled `autorelease: pending`. Merge that PR when you want to publish. That creates `vX.Y.Z`, the GitHub Release, and requests `proxy.golang.org` to index `github.com/nutanix-cloud-native/nkp-catalog-tests@<tag>`.
+GitHub Actions in the `nutanix-cloud-native` org cannot create the initial release PR. Create it locally with write access, then [release-please-action](https://github.com/googleapis/release-please-action) keeps it up to date.
 
-**On-demand.** Actions → Release → Run workflow with an empty tag refreshes the release PR from commits since the last release (same label mapping). Merge it to publish.
+### Create the release PR
+
+Checkout `main` locally, then:
+
+```bash
+devbox run release-please release-pr \
+  --repo-url nutanix-cloud-native/nkp-catalog-tests \
+  --token "$(gh auth token)"
+```
+
+To force a version:
+
+```bash
+devbox run release-please release-pr \
+  --repo-url nutanix-cloud-native/nkp-catalog-tests \
+  --token "$(gh auth token)" \
+  --release-as 0.1.0
+```
+
+### Cut the release
+
+Checkout the release PR, sign the commit, and force-push:
+
+```bash
+gh pr checkout <RELEASE_PR_NUMBER>
+git commit --gpg-sign --amend --no-edit
+git push --force-with-lease
+```
+
+Merging the PR creates `vX.Y.Z`, the GitHub Release, and requests `proxy.golang.org` to index `github.com/nutanix-cloud-native/nkp-catalog-tests@<tag>`.
+
+To re-index an existing tag, run Actions → Release → Run workflow and pass the tag.
