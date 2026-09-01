@@ -9,8 +9,8 @@ import (
 
 	fluxhelmv2 "github.com/fluxcd/helm-controller/api/v2"
 	apimeta "github.com/fluxcd/pkg/apis/meta"
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	ginkgo "github.com/onsi/ginkgo/v2"
+	gomega "github.com/onsi/gomega"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	ctrlClient "sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -25,34 +25,34 @@ import (
 //   - poll HelmRelease until Ready
 //   - if a previous version exists: install it, upgrade, assert success
 func RegisterDefaultTests(appName string) {
-	var _ = Describe(appName+" Tests", Label(appName), func() {
-		Describe("Installing "+appName, Ordered, Label("install"), func() {
+	var _ = ginkgo.Describe(appName+" Tests", ginkgo.Label(appName), func() {
+		ginkgo.Describe("Installing "+appName, ginkgo.Ordered, ginkgo.Label("install"), func() {
 			var (
 				app *App
 				hr  *fluxhelmv2.HelmRelease
 			)
 
-			BeforeAll(func() {
+			ginkgo.BeforeAll(func() {
 				err := SetupKindCluster()
-				Expect(err).ToNot(HaveOccurred())
+				gomega.Expect(err).ToNot(gomega.HaveOccurred())
 
 				err = Env.InstallLatestFlux(Ctx)
-				Expect(err).ToNot(HaveOccurred())
+				gomega.Expect(err).ToNot(gomega.HaveOccurred())
 
 				err = WaitForFluxCRDs()
-				Expect(err).ToNot(HaveOccurred())
+				gomega.Expect(err).ToNot(gomega.HaveOccurred())
 			})
 
-			AfterAll(func() {
-				Expect(TeardownCluster()).To(Succeed())
+			ginkgo.AfterAll(func() {
+				gomega.Expect(TeardownCluster()).To(gomega.Succeed())
 			})
 
-			It("should install successfully with default config", func() {
+			ginkgo.It("should install successfully with default config", func() {
 				app = NewAppScenario(appName, *AppVersion).(*App)
-				GinkgoWriter.Printf("Installing %s @ %s\n", app.Name(), *AppVersion)
+				ginkgo.GinkgoWriter.Printf("Installing %s @ %s\n", app.Name(), *AppVersion)
 				err := app.Install(Ctx, Env)
-				Expect(err).ToNot(HaveOccurred())
-				GinkgoWriter.Printf("Install applied, waiting for HelmRelease to become Ready\n")
+				gomega.Expect(err).ToNot(gomega.HaveOccurred())
+				ginkgo.GinkgoWriter.Printf("Install applied, waiting for HelmRelease to become Ready\n")
 
 				hr = &fluxhelmv2.HelmRelease{
 					TypeMeta: metav1.TypeMeta{
@@ -65,62 +65,62 @@ func RegisterDefaultTests(appName string) {
 					},
 				}
 
-				Eventually(func() error {
+				gomega.Eventually(func() error {
 					err = K8sClient.Get(Ctx, ctrlClient.ObjectKeyFromObject(hr), hr)
 					if err != nil {
-						GinkgoWriter.Printf("HelmRelease Get error: %v\n", err)
+						ginkgo.GinkgoWriter.Printf("HelmRelease Get error: %v\n", err)
 						return err
 					}
 
-					GinkgoWriter.Printf("HelmRelease %s/%s conditions: %v\n",
+					ginkgo.GinkgoWriter.Printf("HelmRelease %s/%s conditions: %v\n",
 						hr.Namespace, hr.Name, hr.Status.Conditions)
 
 					for _, cond := range hr.Status.Conditions {
 						if cond.Status == metav1.ConditionTrue &&
 							cond.Type == apimeta.ReadyCondition {
-							GinkgoWriter.Printf("HelmRelease is Ready!\n")
+							ginkgo.GinkgoWriter.Printf("HelmRelease is Ready!\n")
 							return nil
 						}
 					}
 					return fmt.Errorf("helm release not ready yet")
-				}).WithPolling(PollInterval).WithTimeout(10 * time.Minute).Should(Succeed())
+				}).WithPolling(PollInterval).WithTimeout(10 * time.Minute).Should(gomega.Succeed())
 			})
 		})
 
-		Describe("Upgrading "+appName, Ordered, Label("upgrade"), func() {
+		ginkgo.Describe("Upgrading "+appName, ginkgo.Ordered, ginkgo.Label("upgrade"), func() {
 			var (
 				app     *App
 				hr      *fluxhelmv2.HelmRelease
 				skipped bool
 			)
 
-			BeforeAll(func() {
+			ginkgo.BeforeAll(func() {
 				app = NewAppScenario(appName, *AppVersion).(*App)
 				if !app.HasPreviousVersion() {
 					skipped = true
-					Skip("skipping upgrade test: no previous version available")
+					ginkgo.Skip("skipping upgrade test: no previous version available")
 				}
 
 				err := SetupKindCluster()
-				Expect(err).ToNot(HaveOccurred())
+				gomega.Expect(err).ToNot(gomega.HaveOccurred())
 
 				err = Env.InstallLatestFlux(Ctx)
-				Expect(err).ToNot(HaveOccurred())
+				gomega.Expect(err).ToNot(gomega.HaveOccurred())
 
 				err = WaitForFluxCRDs()
-				Expect(err).ToNot(HaveOccurred())
+				gomega.Expect(err).ToNot(gomega.HaveOccurred())
 			})
 
-			AfterAll(func() {
+			ginkgo.AfterAll(func() {
 				if skipped {
 					return
 				}
-				Expect(TeardownCluster()).To(Succeed())
+				gomega.Expect(TeardownCluster()).To(gomega.Succeed())
 			})
 
-			It("should install the previous version successfully", func() {
+			ginkgo.It("should install the previous version successfully", func() {
 				err := app.InstallPreviousVersion(Ctx, Env)
-				Expect(err).ToNot(HaveOccurred())
+				gomega.Expect(err).ToNot(gomega.HaveOccurred())
 
 				hr = &fluxhelmv2.HelmRelease{
 					ObjectMeta: metav1.ObjectMeta{
@@ -129,7 +129,7 @@ func RegisterDefaultTests(appName string) {
 					},
 				}
 
-				Eventually(func() error {
+				gomega.Eventually(func() error {
 					err = K8sClient.Get(Ctx, ctrlClient.ObjectKeyFromObject(hr), hr)
 					if err != nil {
 						return err
@@ -141,12 +141,12 @@ func RegisterDefaultTests(appName string) {
 						}
 					}
 					return fmt.Errorf("helm release not ready yet")
-				}).WithPolling(PollInterval).WithTimeout(10 * time.Minute).Should(Succeed())
+				}).WithPolling(PollInterval).WithTimeout(10 * time.Minute).Should(gomega.Succeed())
 			})
 
-			It("should upgrade "+appName+" successfully", func() {
+			ginkgo.It("should upgrade "+appName+" successfully", func() {
 				err := app.Upgrade(Ctx, Env)
-				Expect(err).ToNot(HaveOccurred())
+				gomega.Expect(err).ToNot(gomega.HaveOccurred())
 
 				hr = &fluxhelmv2.HelmRelease{
 					ObjectMeta: metav1.ObjectMeta{
@@ -155,7 +155,7 @@ func RegisterDefaultTests(appName string) {
 					},
 				}
 
-				Eventually(func() error {
+				gomega.Eventually(func() error {
 					err = K8sClient.Get(Ctx, ctrlClient.ObjectKeyFromObject(hr), hr)
 					if err != nil {
 						return err
@@ -168,7 +168,7 @@ func RegisterDefaultTests(appName string) {
 						}
 					}
 					return fmt.Errorf("helm release not ready yet")
-				}).WithPolling(PollInterval).WithTimeout(10 * time.Minute).Should(Succeed())
+				}).WithPolling(PollInterval).WithTimeout(10 * time.Minute).Should(gomega.Succeed())
 			})
 		})
 	})

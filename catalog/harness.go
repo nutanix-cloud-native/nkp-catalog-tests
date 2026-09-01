@@ -12,8 +12,8 @@ import (
 	"time"
 
 	fluxhelmv2 "github.com/fluxcd/helm-controller/api/v2"
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	ginkgo "github.com/onsi/ginkgo/v2"
+	gomega "github.com/onsi/gomega"
 	genericClient "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
@@ -43,10 +43,10 @@ var (
 func InitSuite() {
 	AppVersion = flag.String("app-version", "", "The version of the application (required)")
 
-	var _ = BeforeSuite(func() {
-		Expect(*AppVersion).ToNot(BeEmpty(), "-app-version flag is required")
+	var _ = ginkgo.BeforeSuite(func() {
+		gomega.Expect(*AppVersion).ToNot(gomega.BeEmpty(), "-app-version flag is required")
 
-		log.SetLogger(zap.New(zap.WriteTo(GinkgoWriter), zap.UseDevMode(true)))
+		log.SetLogger(zap.New(zap.WriteTo(ginkgo.GinkgoWriter), zap.UseDevMode(true)))
 		Ctx = context.Background()
 
 		if kubeconfig := os.Getenv("E2E_KUBECONFIG"); kubeconfig != "" {
@@ -54,18 +54,18 @@ func InitSuite() {
 			Env = &environment.Env{}
 
 			typedClient, err := client.NewClient(kubeconfig)
-			Expect(err).ShouldNot(HaveOccurred())
+			gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
 			Env.K8sClient = typedClient
 
 			scheme := flux.NewScheme()
 			_ = fluxhelmv2.AddToScheme(scheme)
 
 			K8sClient, err = genericClient.New(typedClient.Config(), genericClient.Options{Scheme: scheme})
-			Expect(err).ShouldNot(HaveOccurred())
+			gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
 		} else {
 			var err error
 			network, err = kind.EnsureDockerNetworkExist(Ctx, "", false)
-			Expect(err).ShouldNot(HaveOccurred())
+			gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
 
 			Env = &environment.Env{
 				Network: network,
@@ -77,9 +77,9 @@ func InitSuite() {
 // RunSuite is the standard Ginkgo test entry point. Call this from your
 // suite's TestApplications function.
 func RunSuite(t *testing.T) {
-	RegisterFailHandler(Fail)
-	suiteConfig, reporterConfig := GinkgoConfiguration()
-	RunSpecs(t, "Application Test Suite", suiteConfig, reporterConfig)
+	gomega.RegisterFailHandler(ginkgo.Fail)
+	suiteConfig, reporterConfig := ginkgo.GinkgoConfiguration()
+	ginkgo.RunSpecs(t, "Application Test Suite", suiteConfig, reporterConfig)
 }
 
 // SetupKindCluster provisions a Kind cluster with Flux, or is a no-op when
@@ -130,13 +130,13 @@ func WaitForFluxCRDs() error {
 			_, err := Env.K8sClient.Clientset().Discovery().
 				ServerResourcesForGroupVersion(r.group + "/" + r.version)
 			if err != nil {
-				GinkgoWriter.Printf("Waiting for API %s/%s: %v\n", r.group, r.version, err)
+				ginkgo.GinkgoWriter.Printf("Waiting for API %s/%s: %v\n", r.group, r.version, err)
 				allFound = false
 				break
 			}
 		}
 		if allFound {
-			GinkgoWriter.Printf("All Flux CRDs are discoverable, refreshing clients\n")
+			ginkgo.GinkgoWriter.Printf("All Flux CRDs are discoverable, refreshing clients\n")
 			scheme := flux.NewScheme()
 			_ = fluxhelmv2.AddToScheme(scheme)
 			c, err := genericClient.New(Env.K8sClient.Config(), genericClient.Options{Scheme: scheme})
