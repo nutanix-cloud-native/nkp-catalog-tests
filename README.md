@@ -4,7 +4,15 @@
 
 ## Usage
 
-Catalogs consume this repository as a single Go module. Add it to `go.mod`:
+Catalogs consume this repository as a single Go module. HelmRelease install/upgrade suites import `github.com/nutanix-cloud-native/nkp-catalog-tests/catalog` (`InitSuite`, `NewAppScenario`, `SetupKindCluster`, `WaitForFluxCRDs`).
+
+While this repository is private, `proxy.golang.org` cannot fetch it. Set:
+
+```bash
+export GOPRIVATE=github.com/nutanix-cloud-native/nkp-catalog-tests
+```
+
+Add it to `go.mod`:
 
 ```
 module github.com/nutanix-cloud-native/nkp-ai-applications-catalog
