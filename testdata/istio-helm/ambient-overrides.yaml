@@ -1,0 +1,33 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: istio-helm-config-overrides
+  namespace: kommander
+data:
+  values.yaml: |
+    # Disable the cacert-job post-install hook — it requires cert-manager's
+    # kommander-ca ClusterIssuer which is not present in apptests Kind clusters.
+    security:
+      enabled: false
+    # Enable ztunnel DaemonSet for ambient mode
+    ztunnel:
+      enabled: true
+      profile: ambient
+    # Switch CNI to ambient profile
+    cni:
+      profile: ambient
+    # Switch istiod to ambient profile and trust ztunnel service accounts
+    istiod:
+      profile: ambient
+      autoscaleEnabled: false
+      autoscaleMin: 1
+      autoscaleMax: 1
+      env:
+        CA_TRUSTED_NODE_ACCOUNTS: "istio-helm-gateway-ns/ztunnel,istio-helm-system/ztunnel"
+    gateway:
+      autoscaling:
+        enabled: false
+        minReplicas: 1
+        maxReplicas: 1
+      replicaCount: 1
