@@ -1,0 +1,69 @@
+---
+# Configures two additional gateways alongside the default istio-helm-ingressgateway:
+#   - istio-egressgateway  (ClusterIP, for controlled egress traffic)
+#   - istio-ingressgateway-internal  (ClusterIP, for internal/cluster-local traffic)
+# Also reduces replica counts for Kind-based environments.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: istio-helm-config-overrides
+  namespace: kommander
+data:
+  values.yaml: |
+    # Disable the cacert-job post-install hook — it requires cert-manager's
+    # kommander-ca ClusterIssuer which is not present in apptests Kind clusters.
+    security:
+      enabled: false
+    istiod:
+      autoscaleEnabled: false
+      autoscaleMin: 1
+      autoscaleMax: 1
+    gateway:
+      autoscaling:
+        enabled: false
+        minReplicas: 1
+        maxReplicas: 1
+      replicaCount: 1
+      additional_gateways:
+        - name: istio-egressgateway
+          labels:
+            istio: egressgateway
+            app: istio-egressgateway
+          revision: "istio-helm"
+          service:
+            type: ClusterIP
+            ports:
+              - name: http2
+                port: 80
+                targetPort: 8080
+                protocol: TCP
+              - name: https
+                port: 443
+                targetPort: 8443
+                protocol: TCP
+              - name: tls
+                port: 15443
+                targetPort: 15443
+                protocol: TCP
+          autoscaling:
+            enabled: false
+          replicaCount: 1
+        - name: istio-ingressgateway-internal
+          labels:
+            istio: ingressgateway-internal
+            app: istio-ingressgateway-internal
+          revision: "istio-helm"
+          service:
+            type: ClusterIP
+            ports:
+              - name: http2
+                port: 80
+                targetPort: 8080
+                protocol: TCP
+              - name: https
+                port: 443
+                targetPort: 8443
+                protocol: TCP
+          autoscaling:
+            enabled: false
+          replicaCount: 1

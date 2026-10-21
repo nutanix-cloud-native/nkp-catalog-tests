@@ -18,6 +18,9 @@ const (
 	Velero                   = "velero"
 	CiliumHubbleRelayTraefik = "cilium-hubble-relay-traefik"
 	GrafanaLokiV3            = "grafana-loki-v3"
+	Headlamp                 = "headlamp"
 	Knative                  = "knative"
 	ProjectGrafanaLokiV3     = "project-grafana-loki-v3"
+	IstioHelm                = "istio-helm"
+	NvidiaGpuOperator        = "nvidia-gpu-operator"
 )
